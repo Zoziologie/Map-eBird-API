@@ -1,0 +1,42 @@
+/*GENEAL STRUCTURE*/
+html, body, .initial-content, #ff, #map-container, #map1, .d-flex{
+    height: 100%;
+    width: 100%;
+}
+#ff{
+    display: flex;
+    flex-flow: column;
+}
+#map-container{
+    flex: 1;  /* 1 and it will fill whole space left if no flex value are set to other children*/
+    overflow: auto;
+    position:relative;
+}
+#map1{
+    z-index: 9;
+}
+#url-group{
+    position: absolute;
+    top: 10px;
+    margin: auto;
+    width: 100vw;
+    max-width: 800px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.input-group-addon {
+    padding: 6px 12px;
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+.input-group-prepend, .input-group-append, .input-group-addon{
+    background-color: #eee;
+}
+a.input-group-text{
+    text-decoration: none;
+}
+.vs__search{
+    line-height: 1.65;
+}

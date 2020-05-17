@@ -1,0 +1,87 @@
+{
+	"data":{
+		"recent": {
+			"items":["regionCode"],
+			"optional":["notable","SpeciesCode"],
+			"parms":["back","cat","hotspot","includeProvisional","maxResultsall","r","sppLocale"],
+			"url":"",
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#3d2a17c1-2129-475c-b4c8-7d362d6000cd"
+		},
+		"recent/geo": {
+			"items":["latlng"],
+			"optional": ["notable","speciesCode"],
+			"parms":["back","cat","dist","hotspot","includeProvisional","maxResultsall","sort","sppLocale"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#62b5ffb3-006e-4e8a-8e50-21d90d036edc"
+		},
+		"historic":{
+			"items":["regionCode","date"],
+			"parms":["cat","detail","hotspot","includeProvisional","maxResultsall","rank","r","sppLocale"],
+			"doc": "https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#2d8c6ee8-c435-4e91-9f66-6d3eeb09edd2"
+		}
+	},
+	"product":{
+		"top100": {
+			"items":["regionCode","date"],
+			"parms":["rankedBy","maxResults"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#2d8d3f94-c4b0-42bd-9c8e-71edfa6347ba"
+		},
+		"lists": {
+			"items":["regionCode","date"],
+			"parms":["maxResults"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#95a206d1-a20d-44e0-8c27-acb09ccbea1a"
+		},
+		"stats": {
+			"items":["regionCode","date"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#506e63ab-abc0-4256-b74c-cd9e77968329"
+		},
+		"spplist": {
+			"items":["locId"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#55bd1b26-6951-4a88-943a-d3a8aa1157dd"
+		},
+		"checklist/view": {
+			"items":["subId"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#2ee89672-4211-4fc1-8493-5df884fbb386"
+		}
+	},
+	"ref":{
+		"adjacent" : {
+			"items":["regionCode"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#3aca0519-3105-47fc-8611-a4dfd500a32f"
+		},
+		"hotspot" : {
+			"items":["regionCode"],
+			"parms":["back","fmt"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#f4f59f90-854e-4ba6-8207-323a8cf0bfe0"
+		},
+		"hotspot/geo": {
+			"items":["latlng"],
+			"parms":["back","dist","fmt"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#674e81c1-6a0c-4836-8a7e-6ea1fe8e6677"
+		},
+		"hotspot/info": {
+			"items":["locId"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#e25218db-566b-4d8b-81ca-e79a8f68c599"
+		},
+		"taxonomy/ebird": {
+			"parms":["cat","fmt","locale","species","version"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#952a4310-536d-4ad1-8f3e-77cfb624d1bc"},
+		"taxon/forms": {
+			"items":["speciesCode"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#e338e5a6-919d-4603-a7db-6c690fa62371"
+		},
+		"taxonomy/versions": {
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#9bba1ff5-6eb2-4f9a-91fd-e5ed34e51500"},
+		"sppgroup": {
+			"items":["speciesGrouping"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#aa9804aa-dbf9-4a53-bbf4-48e214e4677a"
+		},
+		"region/info": {
+			"items":["regionCode"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#07c64240-6359-4688-9c4f-ff3d678a7248"
+		},
+		"region/list": {
+			"items":["regionType","parentRegionCode"],
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#382da1c8-8bff-4926-936a-a1f8b065e7d5"
+		}
+	}
+}
