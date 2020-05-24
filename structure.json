@@ -2,15 +2,16 @@
 	"data":{
 		"recent": {
 			"items":["regionCode"],
-			"optional":["notable","SpeciesCode"],
+			"optional":["notable","speciesCode"],
 			"parms":["back","cat","hotspot","includeProvisional","maxResultsall","r","sppLocale"],
-			"url":"",
+			"url":"this.regionCode + '/recent/' + (this.notable ? 'notable' : this.speciesCode)",
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#3d2a17c1-2129-475c-b4c8-7d362d6000cd"
 		},
 		"recent/geo": {
 			"items":["latlng"],
 			"optional": ["notable","speciesCode"],
 			"parms":["back","cat","dist","hotspot","includeProvisional","maxResultsall","sort","sppLocale"],
+			"url":"this.regionCode'/recent'",
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#62b5ffb3-006e-4e8a-8e50-21d90d036edc"
 		},
 		"historic":{

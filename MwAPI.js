@@ -64,25 +64,74 @@ window.onload = function () {
 				return Object.keys(this.structure).length>0 ? Object.keys(this.structure[this.base]) : [];
 			},
 			clayer: function () {
-			  return Object.keys(this.structure).length>0 ? this.structure[this.base][this.layer] : []
-			},
+				return Object.keys(this.structure).length>0 ? this.structure[this.base][this.layer] : []
+			}
 		},
 		methods: {
 			generateLink: function(event){
 				var url = this.base+'/'+this.layer+'/';
-				url += this.structure[this.base][this.layer].reduce( (acc,e) => {
-					if (e =='regionCode'){
-						return acc + this.regionCode.code + '/'
-					} else if (e =="speciesCode") {
-						return acc + this.speciesCode.code + '/'
-					} else if (e =="date") {
-						return acc + this.date.replace(/-/g,'/') + '/'
-					} else {
-						return acc + this[e] + '/'
-					}
-				},"")
+				url += eval(this.structure[this.base][this.layer]['url'])
 				url += '?key=' + this.key;
 				$('#parms').val(url)
+			},
+			exportURL: function (type, e) {
+				console.log(type)
+				var url = 'https://api.ebird.org/v2/' + jQuery('#parms').val();
+				if (type == 'mapit'){
+					jQuery(e.target).html('<i class="fa fa-spinner fa-spin"></i> Loading')
+					jQuery.getJSON( url , function(data){
+						geojsonFeature = {
+							"type": "FeatureCollection",
+							"features": data.map(d=>{
+								return {
+									"type": "Feature",
+									"properties": d,
+									"geometry": {
+										"type": "Point",
+										"coordinates": [d.lng, d.lat]
+									}
+								}
+							})
+						}
+						geojsonL = L.geoJSON(geojsonFeature,{
+							onEachFeature: function (feature, layer) {
+								table = Object.keys(feature.properties).map(p =>{
+									return '<b>'+p+'</b>: '+feature.properties[p]
+								}).join('<br>')
+								layer.bindPopup(table);
+							}
+						})
+						markersLayer.addLayer(geojsonL);
+						map.flyToBounds(geojsonL.getBounds(),{paddingTopLeft:[0, 48]});
+						dates = data.map(d=>{ 
+							return new Date(d.obsDt)
+						})
+						var maxDate=new Date(Math.max.apply(null,dates));
+						var minDate=new Date(Math.min.apply(null,dates));
+						jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
+						
+					})
+					.fail(function( jqxhr, textStatus, error ) {
+						jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
+						var err = textStatus + ", " + error;
+						alert( "Request Failed: " + err +'<br>Check that the url is valid and that the key is added.');
+					});
+					
+				} else if (type=="downloadit"){
+					window.open(url);
+				}
+			},
+			helpBase: function(){
+				window.open(this.structure[this.base][this.layer]['doc']);
+			},
+			getlatlng: function(){
+				var drawMarkerLocation = new L.Draw.Marker(map);
+				drawMarkerLocation.enable();
+			},
+			setlatlng: function(){
+				var loc = e.layer.getLatLng()
+				this.lat = loc.Lat;
+				this.lng = loc.Lng;
 			}
 		}
 	})
@@ -96,68 +145,38 @@ window.onload = function () {
 		'OpenStreetMap' : L.tileLayer.provider('OpenStreetMap.Mapnik'),
 		'OpenStreetMap': L.tileLayer.provider('OpenStreetMap.Mapnik'),
 	};
+	markerLocation = new L.FeatureGroup().addTo(map);
 	
 	control = L.control.layers(baseLayers, null, {collapsed: true}).addTo(map);
 	markersLayer = L.markerClusterGroup().addTo(map);
 	
+
 	
-	$('.exe').on('click',function(e){
-		
-		
-		
-		var url = 'https://api.ebird.org/v2/' + jQuery('#parms').val();
-		
-		
-		if (e.target.id == 'mapit'){
-			jQuery(e.target).html('<i class="fa fa-spinner fa-spin"></i> Loading')
-			jQuery.getJSON( url , function(data){
-				
-				geojsonFeature = {
-					"type": "FeatureCollection",
-					"features": data.map(d=>{
-						return {
-							"type": "Feature",
-							"properties": d,
-							"geometry": {
-								"type": "Point",
-								"coordinates": [d.lng, d.lat]
-							}
-						}
-					})
-				}
-				
-				geojsonL = L.geoJSON(geojsonFeature,{
-					onEachFeature: function (feature, layer) {
-						table = Object.keys(feature.properties).map(p =>{
-							return '<b>'+p+'</b>: '+feature.properties[p]
-						}).join('<br>')
-						layer.bindPopup(table);
-					}
+	/*new L.Control.Draw({
+		position: 'topright',
+		draw: {
+			polyline: false,
+			polygon: false,
+			circle: false,
+			circlemarker: false,
+			rectangle: true, 
+			marker: {
+				icon: L.AwesomeMarkers.icon({
+					icon: 'list',
+					prefix: 'fa'
 				})
-				markersLayer.addLayer(geojsonL);
-				map.flyToBounds(geojsonL.getBounds(),{paddingTopLeft:[0, 48]});
-				
-				
-				dates = data.map(d=>{ 
-					return new Date(d.obsDt)
-				})
-				var maxDate=new Date(Math.max.apply(null,dates));
-				var minDate=new Date(Math.min.apply(null,dates));
-				
-				
-				jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
-				
-			})
-			.fail(function( jqxhr, textStatus, error ) {
-				jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
-				var err = textStatus + ", " + error;
-				alert( "Request Failed: " + err +'<br>Check that the url is valid and that the key is added.');
-			});
-			
-		} else if (e.target.id=="downloadit"){
-			window.open(url);
+			}
+		},
+		edit: {
+			featureGroup: markerLocation
 		}
+	}).addTo(map)*/
+	map.on('draw:created', function (e) {
+		markerLocation.clearLayers();
+		markerLocation.addLayer(e.layer)
+		app.setlatlng(e)
 	})
+	
 } 
 
 
