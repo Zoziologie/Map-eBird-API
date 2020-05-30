@@ -3,18 +3,35 @@
 
 
 var markersLayer, app
+var now = new Date
+
+/* PREPARE FOR COOKIES*/
+var later = new Date();
+later.setTime(later.getTime() + (365*24*60*60*1000));
+var expires = "expires="+ later.toUTCString();
+cookies_input=['url','base','layer','regionCode','specieCode','lat','lng','notable','date','key'];
+
+function getCookieValue(a) {
+	var b = document.cookie.match('(^|[^;]+)\\s*' + a + '\\s*=\\s*([^;]+)');
+	return b ? decodeURIComponent(b.pop()) : '';
+}
+
+
+
 window.onload = function () {
+	
+	Vue.component('v-select', VueSelect.VueSelect);
 	
 	app = new Vue({
 		delimiters: ["((", "))"],
 		el: '#ff',
 		data: {
 			base: 'data',
-			layer: "recent",
-			regionCode: '',
+			layer: "obs",
+			regionCode: 'France',
 			speciesCode: '',
 			notable: true,
-			date:"",
+			date: now.toISOString().split('T')[0],
 			locId:"",
 			subId:"",
 			key:"",
@@ -23,13 +40,17 @@ window.onload = function () {
 			speciesGrouping : 'eBird',
 			regionType : "country",
 			parentRegionCode : "world",
-			back: '14',
-			cat:'',
+			back: 14,
+			cat: '',
 			hotspot:false,
 			includeProvisional:false,
 			maxResults: 10000,
 			r:'',
 			sppLocale:"en",
+			sort:"date",
+			detail: "simple",
+			rank: "mrec",
+			url: '',
 			structure: {},
 			locations: [],
 			species: [],
@@ -38,11 +59,6 @@ window.onload = function () {
 			var self = this;
 			$.getJSON('https://zoziologie.raphaelnussbaumer.com/assets/Map-eBird-API/structure.json', 
 			function (json) {
-				/*Object.keys(json).forEach(e =>{
-					json[e][items] = json[e][items] || {};
-					json[e][optional] = json[e][optional] || {};
-					json[e][parms] = json[e][parms] || {};
-				})*/
 				self.structure = json;
 			})
 			$.getJSON('https://zoziologie.raphaelnussbaumer.com/assets/Map-eBird-API/location.json', 
@@ -55,6 +71,12 @@ window.onload = function () {
 			function (json) {
 				self.species = json.map(l => { return { text: l[2], value: l[1] } });
 			})
+			cookies_input.forEach(function(s){
+				var v = getCookieValue(s);
+				if (!(v === "")){
+					self[s] = v
+				}
+			})
 		},
 		computed: {
 			base_opts: function(){
@@ -64,22 +86,60 @@ window.onload = function () {
 				return Object.keys(this.structure).length>0 ? Object.keys(this.structure[this.base]) : [];
 			},
 			clayer: function () {
-				return Object.keys(this.structure).length>0 ? this.structure[this.base][this.layer] : []
+				if (Object.keys(this.structure).length==0){
+					return []
+				} else{
+					var tmp =this.structure[this.base][this.layer];
+					return (typeof tmp == 'undefined') ? [] : tmp
+				}
 			}
 		},
 		methods: {
 			generateLink: function(event){
-				var url = this.base+'/'+this.layer+'/';
-				url += eval(this.structure[this.base][this.layer]['url'])
-				url += '?key=' + this.key;
-				$('#parms').val(url)
+				app.url = eval(this.structure[this.base][this.layer]['url'])
+
+				cookies_input.forEach(function(s){
+					document.cookie= s + "=" + encodeURIComponent(app[s]) + ";" + expires + ";path=/";
+				})
+			},
+			helpBase: function(){
+				window.open(this.structure[this.base][this.layer]['doc']);
+			},
+			getlatlng: function(){
+				var drawMarkerLocation = new L.Draw.Marker(map);
+				drawMarkerLocation.enable();
+			},
+			setlatlng: function(e){
+				var loc = e.layer.getLatLng();
+				this.lat = loc.lat;
+				this.lng = loc.lng;
 			},
 			exportURL: function (type, e) {
-				console.log(type)
-				var url = 'https://api.ebird.org/v2/' + jQuery('#parms').val();
-				if (type == 'mapit'){
+				if (type=="toJSON"){
+					window.open('https://api.ebird.org/v2/' + app.url);
+				} else if (type == 'toCSV'){
+					jQuery(e.target.parentElement.parentElement.previousSibling).html('<i class="fa fa-spinner fa-spin"></i> Loading')
+					jQuery.getJSON( 'https://api.ebird.org/v2/' + app.url , function(json){
+						var fields = Object.keys(json[0])
+						var replacer = function(key, value) { return value === null ? '' : value } 
+						var csv = json.map(function(row){
+							return fields.map(function(fieldName){
+								return JSON.stringify(row[fieldName], replacer)
+							}).join(',')
+						})
+						csv.unshift(fields.join(',')) // add header column
+						csv = 'data:text/csv;charset=utf-8,' + csv.join('\r\n');
+
+						var link = document.createElement("a");
+						link.setAttribute("href", encodeURI(csv));
+						link.setAttribute("download", "my_data.csv");
+						document.body.appendChild(link); // Required for FF
+						link.click();
+						jQuery(e.target.parentElement.parentElement.previousSibling).html('<i class="fas fa-globe"></i> Download')
+					})
+				} else if (type == 'map'){
 					jQuery(e.target).html('<i class="fa fa-spinner fa-spin"></i> Loading')
-					jQuery.getJSON( url , function(data){
+					jQuery.getJSON( 'https://api.ebird.org/v2/' + app.url , function(data){
 						geojsonFeature = {
 							"type": "FeatureCollection",
 							"features": data.map(d=>{
@@ -108,30 +168,15 @@ window.onload = function () {
 						})
 						var maxDate=new Date(Math.max.apply(null,dates));
 						var minDate=new Date(Math.min.apply(null,dates));
-						jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
+						jQuery(e.target).html('<i class="fas fa-globe"></i> Map')
 						
 					})
 					.fail(function( jqxhr, textStatus, error ) {
-						jQuery('#mapit').html('<i class="fas fa-globe"></i> Map it!')
+						jQuery(e.target).html('<i class="fas fa-globe"></i> Map')
 						var err = textStatus + ", " + error;
 						alert( "Request Failed: " + err +'<br>Check that the url is valid and that the key is added.');
 					});
-					
-				} else if (type=="downloadit"){
-					window.open(url);
 				}
-			},
-			helpBase: function(){
-				window.open(this.structure[this.base][this.layer]['doc']);
-			},
-			getlatlng: function(){
-				var drawMarkerLocation = new L.Draw.Marker(map);
-				drawMarkerLocation.enable();
-			},
-			setlatlng: function(){
-				var loc = e.layer.getLatLng()
-				this.lat = loc.Lat;
-				this.lng = loc.Lng;
 			}
 		}
 	})

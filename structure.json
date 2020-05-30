@@ -1,22 +1,29 @@
 {
 	"data":{
-		"recent": {
+		"obs": {
 			"items":["regionCode"],
 			"optional":["notable","speciesCode"],
-			"parms":["back","cat","hotspot","includeProvisional","maxResultsall","r","sppLocale"],
-			"url":"this.regionCode + '/recent/' + (this.notable ? 'notable' : this.speciesCode)",
+			"parms":["back","cat","hotspot","includeProvisional","maxResults","r","sppLocale"],
+			"url":" 'data/obs/' + this.regionCode + '/recent/' + (this.notable ? 'notable' : this.speciesCode) + '?key=' + this.key",
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#3d2a17c1-2129-475c-b4c8-7d362d6000cd"
 		},
-		"recent/geo": {
+		"obs/geo": {
 			"items":["latlng"],
 			"optional": ["notable","speciesCode"],
-			"parms":["back","cat","dist","hotspot","includeProvisional","maxResultsall","sort","sppLocale"],
-			"url":"this.regionCode'/recent'",
+			"parms":["back","cat","dist","hotspot","includeProvisional","maxResults","sort","sppLocale"],
+			"url":" 'data/obs/geo/recent/' + (this.notable ? 'notable' : this.speciesCode) + '?lat=' + this.lat + '&lng=' + this.lng + '&key=' + this.key",
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#62b5ffb3-006e-4e8a-8e50-21d90d036edc"
+		},
+		"nearest/geo": {
+			"items":["latlng","speciesCode"],
+			"parms":["back","hotspot","includeProvisional","maxResults","sppLocale","dist"],
+			"url":" 'data/nearest/geo/recent/' + this.speciesCode + '?lat=' + this.lat + '&lng=' + this.lng + '&key=' + this.key",
+			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#6bded97f-9997-477f-ab2f-94f254954ccb"
 		},
 		"historic":{
 			"items":["regionCode","date"],
-			"parms":["cat","detail","hotspot","includeProvisional","maxResultsall","rank","r","sppLocale"],
+			"parms":["cat","detail","hotspot","includeProvisional","maxResults","rank","r","sppLocale"],
+			"url":" 'data/obs/' + this.regionCode + '/historic/' + this.date.replace(/-/g,'/') +'?key=' + this.key",
 			"doc": "https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#2d8c6ee8-c435-4e91-9f66-6d3eeb09edd2"
 		}
 	},
@@ -71,6 +78,7 @@
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#e338e5a6-919d-4603-a7db-6c690fa62371"
 		},
 		"taxonomy/versions": {
+			"items":[],
 			"doc":"https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest#9bba1ff5-6eb2-4f9a-91fd-e5ed34e51500"},
 		"sppgroup": {
 			"items":["speciesGrouping"],

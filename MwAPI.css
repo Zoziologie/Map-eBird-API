@@ -40,3 +40,9 @@ a.input-group-text{
 .vs__search{
     line-height: 1.65;
 }
+.vs__dropdown-toggle{
+    background: white;
+}
+.vs__actions{
+    cursor: pointer;
+}
