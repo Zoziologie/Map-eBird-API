@@ -1,0 +1,233 @@
+---
+layout: blank
+permalink: /map-ebird-api/
+title: "Map eBird API"
+
+plugins: 
+- token
+- jQuery
+- Bootstrap
+- Leaflet
+- Leaflet.markercluster
+- Leaflet.draw
+- font-awesome
+- map-ebird-api
+- leaflet-providers
+- no_default_script
+- vuejs
+- bootstrap-vue
+- vue-select
+---
+<div id="ff">
+	<template>
+		<div>
+			<b-sidebar id="sidebar-1" title="URL constructor" shadow visible>
+				<div class="px-3 py-2">
+					<b-form @submit="generateLink" @submit.stop.prevent>
+						<b-form-row>
+							<b-input-group label = "Collections" class="form-group">
+								<b-form-select id="base-id" v-model="base" :options="base_opts" required></b-form-select>
+								<b-form-select id="layer-id" v-model="layer" :options="layer_opts" required></b-form-select>
+								<b-input-group-append>
+									<b-button variant="outline-secondary"  v-on:click="helpBase">
+										<i class="fas fa-info"></i>
+									</b-button>
+								</b-input-group-append>
+							</b-input-group>
+						</b-form-row>
+						<template v-for="item in clayer.items">
+							<b-form-row>
+								<b-col>
+									<template v-if="item === 'regionCode'">
+										<b-form-group for="regionCode-id" label = "regionCode">
+											<v-select  id="regionCode-id" label="text" v-model="regionCode" :options="locations" :reduce="e => e.value" required></v-select >
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'date'">
+											<b-form-group for="date-id" label = "Date">
+												<b-form-input  id="date-id" v-model="date" type="date" required></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'latlng'">
+											<b-form-row>
+												<b-col>
+													<b-form-group for="lat-id" label = "Latitude">
+														<b-form-input  id="lat-id" v-model="lat" type="number" min="-90" max="90" step="0.000000000000001" required></b-form-input>
+													</b-form-group>
+												</b-col>
+												<b-col>
+													<b-form-group for="lng-id" label = "Longitude">
+														<b-form-input  id="lng-id" v-model="lng" type="number" min="-180" max="180" step="0.000000000000001" required></b-form-input>
+													</b-form-group>
+												</b-col>
+												<b-col md="auto">
+													<b-button href="#" v-on:click="getlatlng" variant="secondary" style=" margin-top: 31px;"><i class="fas fa-map-marked"></i></b-button>
+												</b-col>
+											</b-form-row>
+										</template>
+										<template v-else-if="item === 'locId'">
+											<b-form-group for="locId-id" label = "locId" prepend="L">
+												<b-form-input  id="locId-id" v-model="locId" type="text" required></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'subId'">
+											<b-form-group for="subId-id" label = "subId" prepend="S">
+												<b-form-input  id="subId-id" v-model="subId" type="text" required></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'speciesCode'">
+											<b-form-group for="speciesCode-id" label = "speciesCode">
+												<v-select :options="species" label="text"  id="speciesCode-id" v-model="speciesCode" :reduce="e => e.value" required></v-select>
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'speciesGrouping'">
+											<b-form-group for="speciesGrouping-id" label = "speciesGrouping">
+												<b-form-select :options="['eBird','Merlin']" id="speciesGrouping-id" v-model="speciesGrouping" required></b-form-select>
+											</b-form-group>
+											<b-form-select :options="['eBird','Merlin']" id="speciesGrouping-id" v-model="speciesGrouping" required></b-form-select>
+										</template>
+										<template v-else-if="item === 'regionType'">
+											<b-form-group for="regionType-id" label = "regionType">
+												<b-form-select :options="['country', 'subnational1','subnational2']" id="regionType-id" v-model="regionType" required></b-form-select>
+											</b-form-group>
+										</template>
+										<template v-else-if="item === 'parentRegionCode'">
+											<b-form-group for="parentRegionCode-id" label = "parentRegionCode">
+												<b-form-select :options="locations" id="parentRegionCode-id" v-model="parentRegionCode" required></b-form-select>
+											</b-form-group>
+										</template>
+									</b-col>
+								</b-form-row>
+							</template>
+							<template v-for="opt in clayer.optional">
+								<template v-if="opt === 'notable'">
+									<b-form-row><b-col>
+										<b-form-checkbox id="notable-id" v-model="notable" class="form-group">
+											Only Notable Species
+										</b-form-checkbox>
+									</b-form-group></b-col></b-row>
+								</template>
+								<template v-else-if="opt === 'speciesCode'">
+									<template v-if="!notable">
+										<b-row><b-col><b-form-group for="speciesCode-id" label = "speciesCode">
+											<b-form-select :options="species" id="speciesCode-id" v-model="speciesCode"></b-form-select>
+										</b-form-group></b-col></b-row>
+									</template>
+								</template>
+							</b-col>
+						</template>
+						<b-form-row>
+							<b-col class="text-center">
+								<b-button v-b-toggle.collapse-1 variant="outline-info " size="sm">More Settings</b-button>
+							</b-col>
+						</b-form-row>
+						<b-collapse id="collapse-1" class="mt-2">
+							<b-card> 
+							<template v-for="parm in clayer.parms">
+								<b-form-row>
+									<b-col>
+										<template v-if="parm === 'back'">
+											<b-form-group for="back-id" label = "back">
+												<b-form-input id="`back-id" type="number" min=0 max=30></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'cat'">
+											<b-form-group for="cat-id" label = "cat">
+												<b-form-input id="`cat-id" type="text"></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'hotspot'">
+											<b-form-checkbox v-model="hotspot"  class="form-group">
+												Only in hotspot
+											</b-form-checkbox>
+										</template>
+										<template v-if="parm === 'includeProvisional'">
+											<b-form-checkbox v-model="includeProvisional"  class="form-group">
+												include provisional record
+											</b-form-checkbox>
+										</template>
+										<template v-if="parm === 'maxResults'">
+											<b-form-group for="maxResults-id" label = "maxResults">
+												<b-form-input id="maxResults-id" type="number" min=0 max=10000 ></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'r'">
+											<b-form-group for="r-id" label = "r">
+												<b-form-input id="r-id" type="text"></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'dist'">
+											<b-form-group for="dist-id" label = "dist">
+												<b-form-input id="dist-id" type="number" min=0 max=50></b-form-input>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'sort'">
+											<b-form-group for="sort-id" label = "sort">
+												<b-form-select :options="['date', 'species']" id="sort-id" v-model="sort"></b-form-select>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'detail'">
+											<b-form-group for="detail-id" label = "detail">
+												<b-form-select :options="['simple', 'full']" id="detail-id" v-model="detail"></b-form-select>
+											</b-form-group>
+										</template>
+										<template v-if="parm === 'rank'">
+											<b-form-group for="rank-id" label = "rank">
+												<b-form-select :options="['mrec', 'create']" id="rank-id" v-model="rank"></b-form-select>
+											</b-form-group>
+										</template>
+									</b-col>
+								</b-form-row>
+							</template>	
+							</b-card>
+						</b-collapse>
+						<b-row>
+							<b-col>
+								<b-form-group label="Key" for="key-id">
+									<b-input-group append="">
+										<b-input-group-prepend>
+											<a href="https://ebird.org/api/keygen" target="_blank" class="input-group-text" title="Generate key"><i class="fas fa-key"></i></a>
+										</b-input-group-prepend>
+										<b-form-input v-model="key" type="text" class="form-control" id="key-id" required ></b-form-input>
+									</b-input-group>
+								</b-form-group>
+							</b-col>
+						</b-row>
+						<b-row>
+							<b-col class="text-center">
+								<b-form-group>
+									<b-button type="submit" variant="outline-secondary">Generate url</b-button>
+								</b-form-group>
+							</b-col>
+						</b-row>
+					</b-form>
+				</div>
+			</b-sidebar>
+		</div>
+	</template>
+	<div id="map-container">
+		<div id="map1"></div>
+		<b-input-group id="url-group" class="mb-3">
+			<b-input-group-prepend>
+				<b-button variant="outline-secondary"  onclick="window.open('https://documenter.getpostman.com/view/664302/S1ENwy59?version=latest');">
+					<i class="fas fa-info"></i>
+				</b-button>
+				<b-button variant="outline-secondary" v-b-toggle.sidebar-1><i class="fas fa-wrench"></i></b-button>
+				<b-input-group-text variant="outline-secondary">https://api.ebird.org/v2/</b-input-group-text>
+			</b-input-group-prepend>
+			<b-form-input id="url-id" v-model="url"></b-form-input>
+			<b-input-group-append>
+				<b-button variant="outline-secondary" v-on:click="exportURL('map',$event)" ><i class="fas fa-globe-africa"></i> Map</b-button>
+				<b-dropdown variant="outline-secondary">
+					<template v-slot:button-content>
+						<i class='fas fa-download'></i> Download
+					</template>
+					<b-dropdown-item v-on:click="exportURL('toJSON',$event)">JSON</b-dropdown-item>
+					<b-dropdown-item v-on:click="exportURL('toCSV',$event)">CSV</b-dropdown-item>
+				  </b-dropdown>
+			</b-input-group-append>
+		</b-input-group>
+	</div>
+</div>
+
+
